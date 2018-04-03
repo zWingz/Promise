@@ -89,7 +89,7 @@ class MPromise {
              * @param {Object} val 当前then方法的返回结果
              */
             function handlePromise(val) {
-                if(val && val.then) {
+                if(val && val.then && _isFunction(val.then)) {
                     val.then(nextResolve, nextReject)
                 } else {
                     nextResolve(val)

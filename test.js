@@ -61,20 +61,69 @@ function test(promise) {
 // })
 
 /**
+ * throw error
  * @example
  */
-d = new MPromise(function(res, rej) {
+// d = new MPromise(function(res, rej) {
+//     console.log('new promise')
+//     res(10)
+// })
+// d = d.then(val => {
+//     throw new Error('test error')
+// })
+// setTimeout(() => {
+//     d.catch(e => {
+//         console.log('catch error in setTimeout')
+//         return 100
+//     }).then(val => {
+//         console.log(val)
+//     })
+// }, 1000)
+    
+
+
+/**
+ * return self
+ * @example
+ */
+// d = new MPromise(function(res, rej) {
+//     setTimeout(function() {
+//         res(10)
+//     }, 1000)
+// })
+// c = new MPromise(function(res, rej) {
+//     // setTimeout(function() {
+//         res(1000)
+//     // }, 0)
+// })
+// c.then(val => {
+//     console.log(d.status)
+//     return d
+// }).then(val => {
+//     console.log(val)
+// })
+
+/**
+ * return thenable
+ * @example
+ */
+
+d = new Promise(function(res, rej) {
     res(10)
 })
-d = d.then(val => {
-    throw new Error('test error')
-})
-setTimeout(() => {
-    d.catch(e => {
-        console.log('catch error in setTimeout')
-        return 100
-    }).then(val => {
-        console.log(val)
+d.then(val => {
+    return new Promise(function(res, rej) {
+        res(20)
     })
-}, 1000)
-    
+})
+.then(val => ({
+    then(res, rej) {
+        res(val * 2)
+    }
+}))
+.then(val => ({
+    then: 40 // then不为方法, 则用{then}为值执行promise
+}))
+.then(val => {
+    console.log(val)
+})
