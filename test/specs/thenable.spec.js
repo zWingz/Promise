@@ -9,7 +9,7 @@ describe('return a promise/thenable', () => {
     let promise = utils.createPromise(initVal)
     it('return a promise', function() {
         return promise.then(val => {
-            return new Promise(function(res) {
+            return new MPromise(function(res) {
                 setTimeout(function() {
                     res(val * 100)
                 }, 500)

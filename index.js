@@ -59,12 +59,14 @@ class MPromise {
             if(this.status === PENDING) {
                 this.value = e
                 this.status = REJECT
-                // 如果reject回调为空,则抛出错误
+                // 如果reject回调不为空, 则遍历并循环
                 if(this.onRejectCallback.length) {
                     this.onRejectCallback.forEach(each => {
                         each(this.value)
                     })
                 } else {
+                    // 如果reject回调为空, 则提示警告
+                    // 此处不需要抛出异常, 即使抛出, 也会被try catch掉
                     console.error('UnhandledPromiseRejectionWarning')
                 }
             }
@@ -89,20 +91,24 @@ class MPromise {
              * @param {Object} val 当前then方法的返回结果
              */
             function handlePromise(val) {
+                // 判断是否有then方法
                 if(val && val.then && _isFunction(val.then)) {
                     val.then(nextResolve, nextReject)
                 } else {
+                    // 没有then方法, 则用此值调用nextResolve
                     nextResolve(val)
                 }
             }
             /**
              * 将当前promise的value作为参数,执行回调方法
-             * @param {Function} fnc 
+             * @param {Object} arg 
              */
-            function execute(fnc) {
+            function execute(arg) {
                 try {
                     // 获取当前then的结果, 包括成功与失败
-                    return _isFunction(fnc) ? fnc(self.value) : fnc
+                    // 如果arg是函数, 则以promise的值调用该函数
+                    // 否则将此函数作为值继续执行
+                    return _isFunction(arg) ? arg(self.value) : arg
                 } catch (e) {
                     // 如果出错
                     // 则传递给下一个promise,执行reject

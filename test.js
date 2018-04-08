@@ -83,7 +83,8 @@ function test(promise) {
 
 
 /**
- * return self
+ * 当then方法返回promise自身时候
+ * 会出现异常警告
  * @example
  */
 // d = new MPromise(function(res, rej) {
@@ -104,7 +105,7 @@ function test(promise) {
 // })
 
 /**
- * return thenable
+ * 返回thenable
  * @example
  */
 
