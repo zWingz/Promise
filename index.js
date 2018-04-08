@@ -16,6 +16,9 @@ class MPromise {
         this.onRejectCallback = []
         // 保存当前promise的值
         this.value = null
+        if(!_isFunction(fn)) {
+            throw new Error(`Promise resolver ${fn} is not a function`)
+        }
         try {
             fn(this.resolve.bind(this), this.reject.bind(this))
         } catch (e) {
@@ -35,42 +38,36 @@ class MPromise {
         }
     }
     resolve(val) {
-        // 使用setTimeout进行异步
-        setTimeout(() => {
-            // 只有当状态为PENDING时候才执行
-            // 确保Promise只会被执行一次
-            if(this.status === PENDING) {
-                // 记录当前的值
-                this.value = val
-                // 修改状态
-                this.status = RESOLVED
-                // 执行回调
-                this.onResolveCallback.forEach(each => {
-                    each(this.value)
-                })
-            }
-        })
+        // 只有当状态为PENDING时候才执行
+        // 确保Promise只会被执行一次
+        if(this.status === PENDING) {
+            // 记录当前的值
+            this.value = val
+            // 修改状态
+            this.status = RESOLVED
+            // 执行回调
+            this.onResolveCallback.forEach(each => {
+                each(this.value)
+            })
+        }
     }
     reject(e) {
-        // 使用setTimeout进行异步
-        setTimeout(() => {
-            // 只有当前状态为PENDING的时候才执行
-            // 确保Promise只会被执行一次
-            if(this.status === PENDING) {
-                this.value = e
-                this.status = REJECT
-                // 如果reject回调不为空, 则遍历并循环
-                if(this.onRejectCallback.length) {
-                    this.onRejectCallback.forEach(each => {
-                        each(this.value)
-                    })
-                } else {
-                    // 如果reject回调为空, 则提示警告
-                    // 此处不需要抛出异常, 即使抛出, 也会被try catch掉
-                    console.error('UnhandledPromiseRejectionWarning')
-                }
+        // 只有当前状态为PENDING的时候才执行
+        // 确保Promise只会被执行一次
+        if(this.status === PENDING) {
+            this.value = e
+            this.status = REJECT
+            // 如果reject回调不为空, 则遍历并循环
+            if(this.onRejectCallback.length) {
+                this.onRejectCallback.forEach(each => {
+                    each(this.value)
+                })
+            } else {
+                // 如果reject回调为空, 则提示警告
+                // 此处不需要抛出异常, 即使抛出, 也会被try catch掉
+                console.error('UnhandledPromiseRejectionWarning')
             }
-        })
+        }
     }
     /**
      * then方法
@@ -129,17 +126,48 @@ class MPromise {
                 self.onResolveCallback.push(doResolve)
                 self.onRejectCallback.push(doReject)
             } else if(self.status === RESOLVED){
-                // 如果为RESOLVE, 则直接执行resolve
-                doResolve()
+                // 如果为RESOLVE, 则异步执行resolve
+                setTimeout(doResolve, 0)
             } else {
-                // 如果为REJECT, 则直接执行reject
-                doReject()
+                // 如果为REJECT, 则异步执行reject
+                setTimeout(doReject, 0)
             }
         })
     }
     catch(reject) {
         // 相当于新加入一个then方法
         return this.then(undefined, reject)
+    }
+    static resolve(val) {
+        // 如果为MPromise实例
+        // 则返回该实例
+        if(val instanceof MPromise) {
+            return val
+        } else if(val && val.then && _isFunction(val.then)) {
+            // 如果为具有then方法的对象
+            // 则转为MPromise对象, 并且执行thenable
+            return new MPromise(function(res, rej) {
+                // 执行异步
+                setTimeout(function() {
+                    val.then(res, rej)
+                }, 0)
+            })
+        }
+        // 如果val为一个原始值,或者不具有then方法的对象
+        // 则返回一个新的MPromise对象,状态为resolved
+        const ret = new MPromise(function() {}) // 此处什么都不做
+        ret.status = RESOLVED // 需要将状态改成RESOLVED
+        ret.value = val // 设置val
+        return ret
+    }
+    // reject方法参数会原封不动的作为据因而变成后续方法的参数
+    // 且初始状态为REJECT
+    // 不存在判别thenable
+    static reject(reason) {
+        const ret = new MPromise(function() {}) // 此处什么都不做
+        ret.status = REJECT // 需要将状态改成REJECT
+        ret.value = reason // 设置reason
+        return ret
     }
 }
 MPromise.PENDING = PENDING
