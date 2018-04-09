@@ -11,7 +11,6 @@ class MPromise {
         // 当前promise状态
         this.status = PENDING
         // RESOLVE回调
-        // this.onResolveCallback = []
         this.onResolveCallback = null
         // REJECT回调
         this.onRejectCallback = null
@@ -57,7 +56,9 @@ class MPromise {
         // 只有当前状态为PENDING的时候才执行
         // 确保Promise只会被执行一次
         if(this.status === PENDING) {
+            // 设置据因
             this.value = e
+            // 设置状态为REJECT
             this.status = REJECT
             // 如果reject回调不为空, 则遍历并循环
             this.onRejectCallback && this.onRejectCallback()
@@ -68,12 +69,6 @@ class MPromise {
                     console.error('UnhandledPromiseRejectionWarning --->', e.message || e)
                 }
             })
-            // if(this.onRejectCallback) {
-            // } else {
-            //     // 如果reject回调为空, 则提示警告
-            //     // 此处不需要抛出异常, 即使抛出, 也会被try catch掉
-            //     console.error('UnhandledPromiseRejectionWarning',e.message)
-            // }
         }
     }
     /**
@@ -134,9 +129,7 @@ class MPromise {
                 handlePromise(execute(nowReject || nextReject))
             }
             if(self.status === PENDING) {
-                // 如果当前promise还未执行完毕, 则加入到回调列表中
-                // self.onResolveCallback.push(doResolve)
-                // self.onRejectCallback.push(doReject)
+                // 如果当前promise还未执行完毕, 则设置回调
                 self.onResolveCallback = doResolve
                 self.onRejectCallback = doReject
             } else if(self.status === RESOLVED){
@@ -152,6 +145,14 @@ class MPromise {
         // 相当于新加入一个then方法
         return this.then(undefined, reject)
     }
+    /**
+     * 非标准中定义
+     * 不关心promise状态, 只管执行操作
+     * 
+     * @param {any} [fnc=() => {}] 
+     * @returns {MPromise}
+     * @memberof MPromise
+     */
     finally(fnc = () => {}) {
         return this.then(val => {
             fnc()
@@ -161,6 +162,15 @@ class MPromise {
             throw err
         })
     }
+    /**
+     * Promise.resolve
+     * 将参数转成Promise对象
+     * 
+     * @static
+     * @param {any} val 
+     * @returns {MPromise}
+     * @memberof MPromise
+     */
     static resolve(val) {
         // 如果为MPromise实例
         // 则返回该实例
@@ -193,9 +203,15 @@ class MPromise {
          */
         return new MPromise(function(res) {res(val)})
     }
-    // reject方法参数会原封不动的作为据因而变成后续方法的参数
-    // 且初始状态为REJECT
-    // 不存在判别thenable
+    /**
+     * reject方法参数会原封不动的作为据因而变成后续方法的参数
+     * 且初始状态为REJECT
+     * 不存在判别thenable
+     * @static
+     * @param {any} reason 
+     * @returns 
+     * @memberof MPromise
+     */
     static reject(reason) {
         /**
          * @example

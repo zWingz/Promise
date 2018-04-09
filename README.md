@@ -84,29 +84,36 @@ Promise 解决过程是一个抽象的操作, 其需要输入一个promise和一
 
 如果一个 promise 被一个循环的 thenable 链中的对象解决，而 `[[Resolve]](promise, thenable)` 的递归性质又使得其被再次调用，根据上述的算法将会陷入无限递归之中。算法虽不强制要求，但也鼓励施者检测这样的递归是否存在，若检测到存在则以一个可识别的 TypeError 为据因来拒绝 promise。
 
-
-## 其余
-
-当promise抛出异常.但是没有相应的handle去处理的时候.(既没有调用`catch`)
-
-这时候promise本身并不会将异常抛出. 而是以`console.error`形式提示
-
-例如:
-
-node 中会提示 `UnhandledPromiseRejectionWarning`
-
-浏览器中会提示 `Uncaught (in promise)`
-
-这两个仅通过`console.error`提示, 并不能在try catch中捕获到
-
-
-## 尚未解决问题
+## 存在的问题
 
 - 由于用的是setTimeout模拟, 所以优先级不能保证高于setTimeout
     - 浏览器中可以用MessageChannel(macrotask)
     - node中可以用setImmediate(优先级在某些情况下比setTimeout高一些)
     - setTimeout和setImmediate在无IO操作下,两者执行顺序不确定,但是在IO操作下,setImmediate比setTimeout优先级高. 且setImmediate只在IE下有效
 
-- 没有维护特定的任务队列, 所以在在调用Promise.reject(arg)后, 不能确定后续是否有对应的catch方法, 无法抛出`UnhandledPromiseRejectionWarning` 警告
 
-- all、race方法未实现
+## 需要注意的地方
+
+- `new Promise`中, 如果同时存在`res()`, `rej()`, 以及`throw new Error()`下, 只要执行了其中一个, 其他的都会被忽略. 因为`promise`状态只能转换一次
+
+- 每次调用`then`方法, 返回的都是一个新的`promise`对象. 而不是单纯的返回`this`。所以，promise内部不需要维护一个数组来存放回调函数，因为回调函数最多为一个。
+
+- 异步时机：其实在promise真正触发异步是在then方法中。在`new`一个`promise`的时候，是同步执行的，包括`Promise.resolve`和`Promise.reject`也是同步的, 这两个方法调用完毕后, `promise`的状态马上变成`RESOLVED`和`REJECT`, 并不是`PENDING`状态。当然, 除非你在`new`的时候主动`setTimeout`后才触发`resolve()`方法.
+
+- 当`promise`抛出异常.但是没有相应的`handler`去处理的时候.(既没有调用`catch`), 这时候`promise`并不会抛出错误, 而只是抛出一个警告
+    - node中会提示`UnhandledPromiseRejectionWarning`, 这个可以在`process`中监听
+        ```javascript
+            process.on('unhandledRejection', error => {
+                // Will print "unhandledRejection err is not defined"
+                console.log('unhandledRejection', error.message);
+            });
+
+        ```
+    - 浏览器中会提示`Uncaught (in promise)`, 通过`console.err`提示
+
+- Promise规范是没有`finally`, `all`, `race`方法
+- `Promise.resolve`方法会根据参数的不同执行不同步骤
+    - 如果参数为Promise实例, 则原封不动的返回该实例
+    - 如果参数为`thenable`对象, 则将对象转成`promise`并执行`then`方法
+    - 如果不满足以上条件, 则用该值来执行一个新的`promise`,因为没有进行异步,调用后promise状态为`RESOLVED`
+- `Promise.reject`方法则只会将参数作为据因, 并用这据因返回一个新的`promise`
