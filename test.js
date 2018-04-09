@@ -204,7 +204,7 @@ exampleFnc('MPromise.reject 拒绝一个据因', () => {
     const d = MPromise.reject('据因')
     d.catch(err => {
         console.log(err)
-    })
+    }).finally(done)
 })
 
 done()
