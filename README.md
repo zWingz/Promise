@@ -11,7 +11,8 @@ vi. 许诺；有指望，有前途
 
 - Promise 一个拥有then方法的对象或者函数, 他的行为满足Promise/A+规范
 - thenable 一个定义了then方法的对象或者函数(鸭子类型)
-    ```
+
+    ``` 
     鸭子类型（duck typing）
     如果它走起路来像鸭子，叫起来也是鸭子，那么它就是鸭子。
     只关注对象的行为，不关注对象本身面向接口编型 ，而不是面向实现编程，是设计模式中最重要的思想
@@ -64,7 +65,8 @@ Promise 解决过程是一个抽象的操作, 其需要输入一个promise和一
             - 如果 resolvePromise 或 rejectPromise 已经被调用，则忽略之 `注2`
             - 否则以 e 为据因拒绝 promise
         - 如果 then 不是函数，以 x 为参数执行 promise `注3`
-    ``` javascript
+    
+        ``` javascript
         /**
          * @example
          */
@@ -78,7 +80,7 @@ Promise 解决过程是一个抽象的操作, 其需要输入一个promise和一
         }).then(val => ({
             then: {a: 1} // 注3, 相当于返回了一个{then: {a: 1}} 对象
         }))
-    ```
+        ```
 - 如果 x 不为对象或者函数，以 x 为参数执行 promise
 
 
@@ -102,13 +104,13 @@ Promise 解决过程是一个抽象的操作, 其需要输入一个promise和一
 
 - 当`promise`抛出异常.但是没有相应的`handler`去处理的时候.(既没有调用`catch`), 这时候`promise`并不会抛出错误, 而只是抛出一个警告
     - node中会提示`UnhandledPromiseRejectionWarning`, 这个可以在`process`中监听
-        ```javascript
-            process.on('unhandledRejection', error => {
-                // Will print "unhandledRejection err is not defined"
-                console.log('unhandledRejection', error.message);
-            });
-
-        ```
+    
+    ```javascript
+    process.on('unhandledRejection', error => {
+        // Will print "unhandledRejection err is not defined"
+        console.log('unhandledRejection', error.message);
+    });
+    ```
     - 浏览器中会提示`Uncaught (in promise)`, 通过`console.err`提示
 
 - Promise规范是没有`finally`, `all`, `race`方法
