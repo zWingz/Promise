@@ -11,9 +11,10 @@ class MPromise {
         // 当前promise状态
         this.status = PENDING
         // RESOLVE回调
-        this.onResolveCallback = []
+        // this.onResolveCallback = []
+        this.onResolveCallback = null
         // REJECT回调
-        this.onRejectCallback = []
+        this.onRejectCallback = null
         // 保存当前promise的值
         this.value = null
         if(!_isFunction(fn)) {
@@ -46,9 +47,7 @@ class MPromise {
             // 修改状态
             this.status = RESOLVED
             // 执行回调
-            this.onResolveCallback.forEach(each => {
-                each(this.value)
-            })
+            this.onResolveCallback && this.onResolveCallback()
         }
     }
     reject(e) {
@@ -58,14 +57,12 @@ class MPromise {
             this.value = e
             this.status = REJECT
             // 如果reject回调不为空, 则遍历并循环
-            if(this.onRejectCallback.length) {
-                this.onRejectCallback.forEach(each => {
-                    each(this.value)
-                })
+            if(this.onRejectCallback) {
+                this.onRejectCallback()
             } else {
                 // 如果reject回调为空, 则提示警告
                 // 此处不需要抛出异常, 即使抛出, 也会被try catch掉
-                console.error('UnhandledPromiseRejectionWarning')
+                console.error('UnhandledPromiseRejectionWarning',e.message)
             }
         }
     }
@@ -82,21 +79,6 @@ class MPromise {
         return new MPromise(function(nextResolve, nextReject) {
             // console.log(this)
             /**
-             * 判断当前then方法处理后的结果是一个thenable对象还是一个值
-             * 如果是thenable对象, 则触发该对象的then方法
-             * 如果是一个值, 则直接调用resolve解析这个值
-             * @param {Object} val 当前then方法的返回结果
-             */
-            function handlePromise(val) {
-                // 判断是否有then方法
-                if(val && val.then && _isFunction(val.then)) {
-                    val.then(nextResolve, nextReject)
-                } else {
-                    // 没有then方法, 则用此值调用nextResolve
-                    nextResolve(val)
-                }
-            }
-            /**
              * 将当前promise的value作为参数,执行回调方法
              * @param {Object} arg 
              */
@@ -112,6 +94,24 @@ class MPromise {
                     return nextReject(e)
                 }
             }
+            /**
+             * 判断当前then方法处理后的结果是一个thenable对象还是一个值
+             * 如果是thenable对象, 则触发该对象的then方法
+             * 如果是一个值, 则直接调用resolve解析这个值
+             * @param {Object} val 当前then方法的返回结果
+             */
+            function handlePromise(val) {
+                if(val === self) {
+                    console.error('不能返回自身')
+                }
+                // 判断是否有then方法
+                if(val && val.then && _isFunction(val.then)) {
+                    val.then(nextResolve, nextReject)
+                } else {
+                    // 没有then方法, 则用此值调用nextResolve
+                    nextResolve(val)
+                }
+            }
             // 执行resolve方法
             const doResolve = function() {
                 handlePromise(execute(nowResolve))
@@ -123,8 +123,10 @@ class MPromise {
             }
             if(self.status === PENDING) {
                 // 如果当前promise还未执行完毕, 则加入到回调列表中
-                self.onResolveCallback.push(doResolve)
-                self.onRejectCallback.push(doReject)
+                // self.onResolveCallback.push(doResolve)
+                // self.onRejectCallback.push(doReject)
+                self.onResolveCallback = doResolve
+                self.onRejectCallback = doReject
             } else if(self.status === RESOLVED){
                 // 如果为RESOLVE, 则异步执行resolve
                 setTimeout(doResolve, 0)
@@ -138,6 +140,15 @@ class MPromise {
         // 相当于新加入一个then方法
         return this.then(undefined, reject)
     }
+    finally(fnc) {
+        return this.then(val => {
+            fnc()
+            return val
+        }, err => {
+            fnc()
+            throw err
+        })
+    }
     static resolve(val) {
         // 如果为MPromise实例
         // 则返回该实例
@@ -146,6 +157,15 @@ class MPromise {
         } else if(val && val.then && _isFunction(val.then)) {
             // 如果为具有then方法的对象
             // 则转为MPromise对象, 并且执行thenable
+            /**
+             * @example
+             * MPromise.resolve({
+             *      then(res) {
+             *          console.log('do promise')
+             *          res(10)
+             *      }
+             *  })
+             */
             return new MPromise(function(res, rej) {
                 // 执行异步
                 setTimeout(function() {
@@ -155,19 +175,21 @@ class MPromise {
         }
         // 如果val为一个原始值,或者不具有then方法的对象
         // 则返回一个新的MPromise对象,状态为resolved
-        const ret = new MPromise(function() {}) // 此处什么都不做
-        ret.status = RESOLVED // 需要将状态改成RESOLVED
-        ret.value = val // 设置val
-        return ret
+        /**
+         * @example
+         * MPromise.resolve()
+         */
+        return new MPromise(function(res) {res(val)})
     }
     // reject方法参数会原封不动的作为据因而变成后续方法的参数
     // 且初始状态为REJECT
     // 不存在判别thenable
     static reject(reason) {
-        const ret = new MPromise(function() {}) // 此处什么都不做
-        ret.status = REJECT // 需要将状态改成REJECT
-        ret.value = reason // 设置reason
-        return ret
+        /**
+         * @example
+         * MPromise.reject('some error')
+         */
+        return new MPromise(function(res, rej) {rej(reason)})
     }
 }
 MPromise.PENDING = PENDING
