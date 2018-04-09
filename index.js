@@ -17,6 +17,9 @@ class MPromise {
         this.onRejectCallback = null
         // 保存当前promise的值
         this.value = null
+        // 判断当前promise是否有then回调
+        // 用来判断是否需要抛出unHandledPromiseRejectionWarning
+        this.hasThenHandle = false
         if(!_isFunction(fn)) {
             throw new Error(`Promise resolver ${fn} is not a function`)
         }
@@ -57,13 +60,20 @@ class MPromise {
             this.value = e
             this.status = REJECT
             // 如果reject回调不为空, 则遍历并循环
-            if(this.onRejectCallback) {
-                this.onRejectCallback()
-            } else {
-                // 如果reject回调为空, 则提示警告
-                // 此处不需要抛出异常, 即使抛出, 也会被try catch掉
-                console.error('UnhandledPromiseRejectionWarning',e.message)
-            }
+            this.onRejectCallback && this.onRejectCallback()
+            // 延迟判断是否有then处理
+            // 否则抛出警告
+            setTimeout(() => {
+                if(!this.hasThenHandle) {
+                    console.error('UnhandledPromiseRejectionWarning --->', e.message || e)
+                }
+            })
+            // if(this.onRejectCallback) {
+            // } else {
+            //     // 如果reject回调为空, 则提示警告
+            //     // 此处不需要抛出异常, 即使抛出, 也会被try catch掉
+            //     console.error('UnhandledPromiseRejectionWarning',e.message)
+            // }
         }
     }
     /**
@@ -73,6 +83,8 @@ class MPromise {
      */
     then(nowResolve = val => val, nowReject) {
         const self = this
+        // 如果有then方法调用, 则将hasThenHandle设为true
+        self.hasThenHandle = true
         /**
          * 返回一个新的promise, 用于链式调用
          */
@@ -140,7 +152,7 @@ class MPromise {
         // 相当于新加入一个then方法
         return this.then(undefined, reject)
     }
-    finally(fnc) {
+    finally(fnc = () => {}) {
         return this.then(val => {
             fnc()
             return val

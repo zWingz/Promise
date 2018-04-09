@@ -10,13 +10,14 @@ function createPromise(val = 10, promise = MPromise) {
 }
 function wrapper(text, fnc) {
     return function() {
-        console.log(`<--------- @example ${text} ------------->`)
+        console.log(`\n<--------- @example --------->`)
+        console.log(`<--------- ${text} --------->`)
         fnc()
     }
 }
 function done() {
     const fnc = query.shift()
-    fnc && fnc()
+    fnc && setTimeout(fnc, 100)
 }
 function exampleFnc(text, fun) {
     query.push(wrapper(text, fun))
@@ -34,9 +35,7 @@ exampleFnc('基本使用', () => {
     }).then(val => {
         console.log(val)
         return val * 2
-    }).finally(() => {
-        done()
-    })
+    }).finally(done)
 })
 
 
@@ -54,9 +53,7 @@ exampleFnc('基本使用', () => {
          return val * 2
      }).catch(err => {
          console.log('catch error')
-     }).finally(() => {
-        done()
-    })
+     }).finally(done)
  })
 
 
@@ -79,9 +76,7 @@ exampleFnc('在new的时候抛出异常', () => {
         console.log('then reject --> ', e)
     }).catch(e => {
         console.log('catch error')
-    }).finally(() => {
-        done()
-    })
+    }).finally(done)
 })
 
 /**
@@ -102,9 +97,7 @@ exampleFnc('new 一个 promise时候, res, rej 只会执行第一个', () => {
         return 100
     }).then(val => {
         console.log(val)
-    }).finally(() => {
-        done()
-    })
+    }).finally(done)
 })
 
 /**
@@ -125,54 +118,48 @@ exampleFnc('new 一个 promise时候, res, rej 只会执行第一个', () => {
              return 100
          }).then(val => {
              console.log(val)
-         }).finally(() => {
-             done()
-         })
+         }).finally(done)
      }, 1000)
  })
     
 
 
-/**
- * 当then方法返回promise自身时候
- * 会出现异常警告
- * @example
- */
-exampleFnc('then 方法返回自身会报错', () => {
-    var a = new MPromise((res, rej) => {
-        res(10)
-        console.log('res')
-    }).then(val => {
-        console.log('then', val)
-        return a
-    })
-    console.log('after promise')
+exampleFnc('没有catch的话会提示unhandlePromiseRejectionWarning', () => {
+    new MPromise(function(res, rej) {
+        rej(new Error(10))
+    }).finally(done)
 })
+
 
 /**
  * 返回thenable
  * @example
  */
-
-// d = new Promise(function(res, rej) {
-//     res(10)
-// })
-// d.then(val => {
-//     return new Promise(function(res, rej) {
-//         res(20)
-//     })
-// })
-// .then(val => ({
-//     then(res, rej) {
-//         res(val * 2)
-//     }
-// }))
-// .then(val => ({
-//     then: 40 // then不为方法, 则用{then}为值执行promise
-// }))
-// .then(val => {
-//     console.log(val)
-// })
+exampleFnc('返回thenable', () => {
+    const d = new MPromise(function(res, rej) {
+        res(10)
+    })
+    // 返回Promise
+    d.then(val => {
+        return new Promise(function(res, rej) {
+            res(20)
+        })
+    })
+    // 返回thenable
+    .then(val => ({
+        then(res, rej) {
+            res(val * 2)
+        }
+    }))
+    // 如果then不是函数则返回对象
+    .then(val => ({
+        then: 40 // then不为方法, 则用{then}为值执行promise
+    }))
+    .then(val => {
+        console.log(val)
+        done()
+    })
+})
 
 
 /**
@@ -180,17 +167,18 @@ exampleFnc('then 方法返回自身会报错', () => {
  * MPromise.resolve
  * thenable
  */
-// d = MPromise.resolve({
-//     then(res) {
-//         console.log('do promise')
-//         res(10)
-//     }
-// })
-
-// d.then(val => {
-//     console.log('do promise then', val)
-// })
-// console.log(d)
+exampleFnc('MPromise.resolve 将thenable 转成MPromise', () => {
+    const d = MPromise.resolve({
+        then(res) {
+            console.log('do thenable')
+            res(10)
+        }
+    })
+    d.then(val => {
+        console.log('do promise then', val)
+        done()
+    })
+})
 
 
 /**
@@ -198,24 +186,25 @@ exampleFnc('then 方法返回自身会报错', () => {
  * MPromise.resolve
  * value or empty
  */
-// d = MPromise.resolve(10)
-// d.then(() => {
-//     console.log('do promise then')
-//     return 10
-// }).then(val => {
-//     console.log('after value', val)
-// })
-// console.log(d)
-
+exampleFnc('MPromise.resolve 执行固定值或者空值', () => {
+    const d = MPromise.resolve(10)
+    d.then(() => {
+        console.log('do then')
+        return 10
+    }).then(val => {
+        console.log('after value', val)
+        done()
+    })
+})
 /**
  * @example
  * MPromise.reject
  */
-// d = MPromise.reject('lll')
-// console.log(d)
-// e = d.catch(err => {
-//     console.log(err)
-// })
-
+exampleFnc('MPromise.reject 拒绝一个据因', () => {
+    const d = MPromise.reject('据因')
+    d.catch(err => {
+        console.log(err)
+    })
+})
 
 done()
