@@ -1,4 +1,9 @@
-# Promise/A+ 规范
+# Promise
+
+[![CircleCI](https://circleci.com/gh/zWingz/Promise.svg?style=svg)](https://circleci.com/gh/zWingz/Promise)
+[![codecov](https://codecov.io/gh/zWingz/Promise/branch/master/graph/badge.svg)](https://codecov.io/gh/zWingz/Promise)
+
+## Promise/A+ 规范
 
 ```
 英 ['prɒmɪs]  美 ['prɑmɪs]
@@ -7,7 +12,7 @@ vt. 允诺，许诺；给人以…的指望或希望
 vi. 许诺；有指望，有前途
 ```
 
-## 术语
+### 术语
 
 - Promise 一个拥有then方法的对象或者函数, 他的行为满足Promise/A+规范
 - thenable 一个定义了then方法的对象或者函数(鸭子类型)
@@ -21,7 +26,7 @@ vi. 许诺；有指望，有前途
 - 异常（exception） 使用throw所抛出的Error
 - 据因（reason） 异常的原因，既Promise被拒绝的原因
 
-## 要求
+### 要求
 
 - Promise状态
     - 等待态(Pending) 可以转换成执行态或者拒绝态
@@ -37,7 +42,7 @@ vi. 许诺；有指望，有前途
     - then方法必须返回一个新的promise对象
 
 
-## Promise 解决过程
+### Promise 解决过程
 
 Promise 解决过程是一个抽象的操作, 其需要输入一个promise和一个值, 表示为`[[Resolve]](promise, x)`,
 
@@ -86,7 +91,7 @@ Promise 解决过程是一个抽象的操作, 其需要输入一个promise和一
 
 如果一个 promise 被一个循环的 thenable 链中的对象解决，而 `[[Resolve]](promise, thenable)` 的递归性质又使得其被再次调用，根据上述的算法将会陷入无限递归之中。算法虽不强制要求，但也鼓励施者检测这样的递归是否存在，若检测到存在则以一个可识别的 TypeError 为据因来拒绝 promise。
 
-## 存在的问题
+### 存在的问题
 
 - 由于用的是setTimeout模拟, 所以优先级不能保证高于setTimeout
     - 浏览器中可以用MessageChannel(macrotask)
@@ -94,7 +99,7 @@ Promise 解决过程是一个抽象的操作, 其需要输入一个promise和一
     - setTimeout和setImmediate在无IO操作下,两者执行顺序不确定,但是在IO操作下,setImmediate比setTimeout优先级高. 且setImmediate只在IE下有效
 
 
-## 需要注意的地方
+### 需要注意的地方
 
 - `new Promise`中, 如果同时存在`res()`, `rej()`, 以及`throw new Error()`下, 只要执行了其中一个, 其他的都会被忽略. 因为`promise`状态只能转换一次
 
