@@ -1,6 +1,6 @@
 # Promise
 
-[![CircleCI](https://circleci.com/gh/zWingz/Promise.svg?style=svg)](https://circleci.com/gh/zWingz/Promise)
+[![CircleCI](https://img.shields.io/circleci/project/github/zWingz/Promise.svg)](https://circleci.com/gh/zWingz/Promise)
 [![codecov](https://codecov.io/gh/zWingz/Promise/branch/master/graph/badge.svg)](https://codecov.io/gh/zWingz/Promise)
 
 ## Promise/A+ 规范
