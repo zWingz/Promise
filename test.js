@@ -1,5 +1,28 @@
 const MPromise = require('./index.js')
 
+
+/**
+ * 大数遍历耗时
+ */
+// function a() {
+//     console.log('begin function a')
+// 	let i = 0
+// 	for(; i < 10000000000; i++) {
+// 	}
+// 	console.log('function a is done')
+// 	return i
+// }
+// a = new MPromise(function(res, rej){
+//     console.log('begin res')
+//     res(a())
+//     console.log('after res')
+// })
+// a.then(val => {
+//     console.log('promise then val is', val)
+// })
+// console.log('after create a promise', a)
+
+
 const query = []
 function createPromise(val = 10, promise = MPromise) {
     return new promise(function(res, rej) {
@@ -17,7 +40,7 @@ function wrapper(text, fnc) {
 }
 function done() {
     const fnc = query.shift()
-    fnc && setTimeout(fnc, 100)
+    // fnc && setTimeout(fnc, 100)
 }
 function exampleFnc(text, fun) {
     query.push(wrapper(text, fun))

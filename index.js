@@ -40,6 +40,13 @@ class MPromise {
             this.reject(e)
         }
     }
+    /**
+     * promise执行函数
+     * 将promise状态由PENDING转换为RESOLVED
+     * 并且设置终值, 执行回调
+     * @param {any} val 终值
+     * @memberof MPromise
+     */
     resolve(val) {
         // 只有当状态为PENDING时候才执行
         // 确保Promise只会被执行一次
@@ -52,6 +59,13 @@ class MPromise {
             this.onResolveCallback && this.onResolveCallback()
         }
     }
+    /**
+     * promise拒绝函数
+     * 将promise状态由PENDING转换为REJECT
+     * 并且设置据因, 执行回调
+     * @param {any} e 据因 
+     * @memberof MPromise
+     */
     reject(e) {
         // 只有当前状态为PENDING的时候才执行
         // 确保Promise只会被执行一次
@@ -73,8 +87,10 @@ class MPromise {
     }
     /**
      * then方法
-     * @param {Function} res 当前then的resolve函数, 当promise为RESOLVE时,处理当前结果 
-     * @param {Function} rej 当前then的reject函数, 当promise被REJECT时调用
+     * @param {Function} [nowResolve=val => val] 前then的resolve函数, 当promise为RESOLVE时,处理当前结果 
+     * @param {Function} nowReject 当前then的reject函数, 当promise被REJECT时调用
+     * @returns {MPromise}
+     * @memberof MPromise
      */
     then(nowResolve = val => val, nowReject) {
         const self = this
@@ -141,6 +157,14 @@ class MPromise {
             }
         })
     }
+    /**
+     * 捕获异常
+     * 相当于加入一个then方法
+     * 只不过这个then方法只有onReject
+     * @param {Function} reject 
+     * @returns {MPromise}
+     * @memberof MPromise
+     */
     catch(reject) {
         // 相当于新加入一个then方法
         return this.then(undefined, reject)
