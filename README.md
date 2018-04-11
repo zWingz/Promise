@@ -1,5 +1,6 @@
 # Promise 实现原理
-
+[![CircleCI](https://img.shields.io/circleci/project/github/zWingz/Promise.svg)](https://circleci.com/gh/zWingz/Promise)
+[![codecov](https://codecov.io/gh/zWingz/Promise/branch/master/graph/badge.svg)](https://codecov.io/gh/zWingz/Promise)
 ## Promise基本用法
 
 ```javascript
