@@ -420,7 +420,6 @@ process.on('unhandledRejection', function (err, p) {
 
 在编写代码中, 一开始卡在这一步挺久.
 
-
 由于无法知道promise实例后续是否有相应的错误处理函数.
 
 简单的判断`onReject === undefined` 是不行的.
