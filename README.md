@@ -1,6 +1,7 @@
 # Promise 实现原理
 [![CircleCI](https://img.shields.io/circleci/project/github/zWingz/Promise.svg)](https://circleci.com/gh/zWingz/Promise)
 [![codecov](https://codecov.io/gh/zWingz/Promise/branch/master/graph/badge.svg)](https://codecov.io/gh/zWingz/Promise)
+
 ## Promise基本用法
 
 ```javascript
@@ -43,7 +44,7 @@ class Promise {
 
 ### 根据`Promise/A+规范`(以下简称规范)中所说的
 
-- Promise有三个状态 `PENDING`, `FULFILLED`, `REJECTED`
+- Promise有三个状态 `PENDING`, `RESOLVED`, `REJECTED`
 - 状态只会从`PENDING`转换到`RESOLVED`或者`REJECTED`其中一个, 并且之后不会再改变
 - 当Promise处于执行态时, 会有一个终值, 并且该值不会再改变
 - 当Promise处于拒绝态时, 会有一个据因, 并且该据因不会再改变
@@ -151,8 +152,8 @@ class Promise() {
         return new Promise(function(nextResolve, nextReject) {
             if(self.status === PENDING) {
                 // 加入到任务队列
-                self.onResolveCallback = onResolve
-                self.onRejectCallback = onReject
+                self.onResolveCallback.push(onResolve)
+                self.onRejectCallback.push(onReject)
             } else if(self.status === RESOLVED) {
                 // 异步执行
                 setTimeout(onResolve, 0, self.value)
@@ -421,6 +422,7 @@ process.on('unhandledRejection', function (err, p) {
 
 在编写代码中, 一开始卡在这一步挺久.
 
+
 由于无法知道promise实例后续是否有相应的错误处理函数.
 
 简单的判断`onReject === undefined` 是不行的.
@@ -434,6 +436,7 @@ new Promise(function(res, rej) {
     rej(10)
 })
 ```
+
 这类是同步执行的, `onReject === undefined` 恒为`true`.
 
 我的做法是给promise实例添加一个`hasThenHandle`的属性, 在`then`方法中将其设为`true`
@@ -474,4 +477,3 @@ console.log('after new Promise')
 
 [ECMAScript 6入门](http://es6.ruanyifeng.com/#docs/promise#Promise-prototype-finally)
 
-## 分享至此完结, 谢谢大家

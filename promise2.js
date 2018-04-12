@@ -36,8 +36,8 @@ class Promise2 {
         return new Promise2(function(nextResolve, nextReject) {
             if(self.status === PENDING) {
                 // 加入到任务队列
-                self.onResolveCallback = onResolve
-                self.onRejectCallback = onReject
+                self.onResolveCallback.push(onResolve)
+                self.onRejectCallback.push(onReject)
             } else if(self.status === RESOLVED) {
                 // 异步执行
                 setTimeout(onResolve, 0, self.value)
