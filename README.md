@@ -126,7 +126,7 @@ console.log('after ins')
 
 ### 还有一个`then`方法没有完成. 先看下规范怎么说
 
-- 一个promise必须提供一个`then`方法以访问当前值, 终止和据因
+- 一个promise必须提供一个`then`方法以访问当前值, 终止和据因
 - then接受两个参数`then(onResolve, onReject)`
 - onResolve和onReject都是可选, 如果不是函数则被忽略
 - onResolve方法在promise执行结束后被调用, 其第一个参数为promise的终值, 被调用次数不超过一次
@@ -168,7 +168,7 @@ class Promise() {
 
 此时Promise已经可以完成异步操作.
 但是Promise还有一个关键特点是可以链式调用. 目前是还没有实现链式调用这一步.
-具体代码看`promise2.js`
+具体代码看[promise2.js](https://github.com/zWingz/Promise/blob/master/promise2.js)
 
 ### 接下来继续看下规范怎么说
 
@@ -255,7 +255,7 @@ class Promise() {
 }
 ```
 
-至此一个`Promise`可以说基本完成了.(具体代码请看`promise3.js`)
+至此一个`Promise`可以说基本完成了.(具体代码请看[promise3.js](https://github.com/zWingz/Promise/blob/master/promise3.js))
 
 
 ### 规范外的一些东西
@@ -293,7 +293,7 @@ class Promise() {
 
 finally函数作用我想大家都应该知道, 就是无论当前promise状态是如何. 都一定会执行回调.
 
-finally方法中, 不接收任何参数, 所以并不能知道前面的Promise的状态.
+finally方法中, 不接收任何参数, 所以并不能知道前面的Promise的状态.
 
 同时, 他不会对promise产生影响.总是返回原来的值 所以在`finally`中的操作,应该是与状态无关, 不依赖于promise的执行结果
 
@@ -408,7 +408,7 @@ class Promise() {
 
 #### node中的`unhandledRejection`和浏览器中的`Uncaught (in promise)` 提示
 
-在Promise中产生的所有错误都会被Promise吞掉. 当没有相应的错误处理函数时候, node和浏览器分别有不同的表现.
+在Promise中产生的所有错误都会被Promise吞掉. 当没有相应的错误处理函数时候, node和浏览器分别有不同的表现.
 
 但是这并不是一个新的错误, 因为不能用`try{} catch(){}` 捕获.
 
@@ -422,7 +422,6 @@ process.on('unhandledRejection', function (err, p) {
 
 在编写代码中, 一开始卡在这一步挺久.
 
-
 由于无法知道promise实例后续是否有相应的错误处理函数.
 
 简单的判断`onReject === undefined` 是不行的.
