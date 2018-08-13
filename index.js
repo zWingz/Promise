@@ -294,8 +294,8 @@ Promise.REJECT = REJECT
 Promise.deferred = function() {
   const deferred = {}
   deferred.promise = new Promise((res, rej) => {
-    dfd.resolve = res
-    dfd.reject = rej
+    deferred.resolve = res
+    deferred.reject = rej
   })
   return deferred
 }
