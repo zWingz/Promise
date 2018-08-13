@@ -178,84 +178,141 @@ Promise 解决过程
 
 **简单说就是**
 
-x为then方法中onResolve或者onReject中返回的值, promise2为then方法返回的新promise.
+`x`为`then`方法中`onResolve`或者`onReject`中返回的值, `promise2`为`then`方法返回的新`promise`.
 
-promise的解决过程是一个抽象步骤. 需要输入一个promise和一个值. 表示为`[[Resolve]](promise, x)`
+`promise`的解决过程是一个抽象步骤. 需要输入一个`promise`和一个**值**. 表示为`[[Resolve]](promise, x)`
 
-- 如果x和promise2相等, 则以`TypeError`为据因拒绝执行promise2
-- 如果x为Promise实例, 则让promise2接受x的状态
-- 如果x为thenable对象, 则调用其`then`方法
-- 如果都不满足, 则用x为参数执行promise2
+- 如果`x`和`promise2`相等, 则以`TypeError`为据因拒绝执行promise2
+- 如果`x`为`Promise`实例, 则让`promise2`接受x的状态
+- 如果`x`为`thenable`对象, 则调用其`then`方法
+- 如果都不满足, 则用`x`为参数执行`promise2`
 
-继续修改then方法
+继续修改then方法, 以及添加`resolvePromise`来执行`Promise`解决过程
 
 ```javascript
+function _isFunction(val) {
+  return typeof val === 'function'
+}
+function _isThenable(x) {
+  return _isFunction(x) || (typeof x === 'object' && x !== null)
+}
+
+/**
+ * Promise 解决过程
+ * 如果是thenable对象, 则触发该对象的then方法
+ * 如果是一个值, 则直接调用resolve解析这个值
+ * @param {Promise}} promise
+ * @param {Object} x
+ * @param {Function} resolve
+ * @param {Function} reject
+ */
+function resolvePromise(promise, x, resolve, reject) {
+  // 要求每次返回新的promise
+  // 如果返回是当前的promise, 则抛出typeError
+  if (x === promise) {
+    reject(new TypeError('Chaining cycle detected for promise'))
+  }
+  let called = false
+  // 判断是否thenable对象
+  if (_isThenable(x)) {
+    try {
+      const { then } = x
+      if (_isFunction(then)) {
+        then.call(
+          x,
+          val => {
+            if (!called) {
+              called = true
+              // 如果不断的返回thenable
+              // 则需要不断地递归
+              // 但是实际上不应该不断的返回thenable
+              resolvePromise(promise, val, resolve, reject)
+            }
+          },
+          reason => {
+            if (!called) {
+              called = true
+              reject(reason)
+            }
+          }
+        )
+      } else {
+        resolve(x)
+      }
+    } catch (e) {
+      if (called) {
+        return
+      }
+      called = true
+      reject(e)
+    }
+  } else {
+    //  非thenable, 则以该值来执行resolve
+    resolve(x)
+  }
+}
 class Promise() {
     // ...
-    then(nowResolve = val => val, nowReject) {
-        const self = this
-        /**
-         * 返回一个新的promise, 用于链式调用
-         */
-        return new Promise(function(nextResolve, nextReject) {
-            // console.log(this)
-            /**
-             * 将当前promise的value作为参数,执行回调方法
-             * @param {Object} arg
-             */
-            function execute(arg) {
-                try {
-                    // 获取当前then的结果, 包括成功与失败
-                    // 如果arg是函数, 则以promise的值调用该函数
-                    // 否则将此函数作为值继续执行
-                    return _isFunction(arg) ? arg(self.value) : arg
-                } catch (e) {
-                    // 如果出错
-                    // 则传递给下一个promise,执行reject
-                    return nextReject(e)
-                }
-            }
-            /**
-             * 判断当前then方法处理后的结果是一个thenable对象还是一个值
-             * 如果是thenable对象, 则触发该对象的then方法
-             * 如果是一个值, 则直接调用resolve解析这个值
-             * @param {Object} val 当前then方法的返回结果
-             */
-            function handlePromise(val) {
-                // 判断是否有then方法
-                if(val && val.then && _isFunction(val.then)) {
-                    val.then(nextResolve, nextReject)
-                } else {
-                    // 没有then方法, 则用此值调用nextResolve
-                    nextResolve(val)
-                }
-            }
-            // 执行resolve方法
-            const doResolve = function() {
-                handlePromise(execute(nowResolve))
-            }
-            // 执行reject方法
-            // 如果当前then没有相应的reject回调
-            const doReject = function() {
-                handlePromise(execute(nowReject || nextReject))
-            }
-            if(self.status === PENDING) {
-                // 如果当前promise还未执行完毕, 则设置回调
-                self.onResolveCallback.push(doResolve)
-                self.onRejectCallback.push(doReject)
-            } else if(self.status === RESOLVED){
-                // 如果为RESOLVE, 则异步执行resolve
-                setTimeout(doResolve, 0)
-            } else {
-                // 如果为REJECT, 则异步执行reject
-                setTimeout(doReject, 0)
-            }
-        })
-    }
+    /**
+   * then方法
+   * @param {Function} [onFulfilled] 前then的resolve函数, 当promise为RESOLVE时,处理当前结果
+   * @param {Function} onRejected 当前then的reject函数, 当promise被REJECT时调用
+   * @returns {Promise}
+   * @memberof Promise
+   */
+  then(onFulfilled, onRejected) {
+    onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : val => val
+    onRejected =
+      typeof onRejected === 'function'
+        ? onRejected
+        : err => {
+            throw err
+          }
+    const self = this
+    // 如果有then方法调用, 则将hasThenHandle设为true
+    // console.log(this);
+    this.hasThenHandle = true
+    /**
+     * 返回一个新的promise, 用于链式调用
+     */
+    const ret = new Promise(function(resolve, reject) {
+      // 用try..catch包裹执行方法
+      const tryCatchWrapper = function(fnc) {
+        return function() {
+          try {
+            fnc()
+          } catch (e) {
+            reject(e)
+          }
+        }
+      }
+      // 封装resolve方法回调
+      const doResolve = tryCatchWrapper(function() {
+        resolvePromise(ret, onFulfilled(self.value), resolve, reject)
+      })
+      // 封装reject方法回调
+      // 如果当前then没有相应的reject回调
+      const doReject = tryCatchWrapper(function() {
+        resolvePromise(ret, onRejected(self.value), resolve, reject)
+      })
+      if (self.status === PENDING) {
+        // 如果当前promise还未执行完毕, 则设置回调
+        self.onResolveCallback.push(doResolve)
+        self.onRejectCallback.push(doReject)
+      } else if (self.status === RESOLVED) {
+        // 如果为RESOLVE, 则异步执行resolve
+        setTimeout(doResolve, 0)
+      } else {
+        // 如果为REJECT, 则异步执行reject
+        setTimeout(doReject, 0)
+      }
+    })
+    return ret
+  }
 }
 ```
 
-至此一个`Promise`可以说基本完成了.(具体代码请看[promise3.js](https://github.com/zWingz/Promise/blob/master/promise3.js))
+至此一个`Promise`可以说基本完成了.(完整代码请看[index.js](https://github.com/zWingz/Promise/blob/master/index.js))
 
 
 ### 规范外的一些东西
@@ -345,12 +402,12 @@ class Promise() {
      * @returns {MPromise}
      * @memberof MPromise
      */
-    static resolve(val) {
+    static resolve(x) {
         // 如果为MPromise实例
         // 则返回该实例
-        if(val instanceof Promise) {
+        if(x instanceof Promise) {
             return val
-        } else if(val && val.then && _isFunction(val.then)) {
+        } else if(_isThenable(x)) {
             // 如果为具有then方法的对象
             // 则转为MPromise对象, 并且执行thenable
             /**
@@ -375,7 +432,7 @@ class Promise() {
          * @example
          * MPromise.resolve()
          */
-        return new Promise(function(res) {res(val)})
+        return new Promise(function(res) {res(x)})
     }
     /**
      * reject方法参数会原封不动的作为据因而变成后续方法的参数
@@ -397,14 +454,6 @@ class Promise() {
 ```
 
 ### 开发过程中遇到其他问题
-
-#### onResolveCallBack和onRejectCallBack是否需要用数组来维护 ?
-
-规范中有提到, 每次调用`then`方法都会返回一个新的Promise实例.
-
-那么其实每个promise实例中的回调最多为1个, 不需要使用数组来维护.
-
-只用一个onResolve和onReject来维护就可以.
 
 #### node中的`unhandledRejection`和浏览器中的`Uncaught (in promise)` 提示
 
@@ -475,4 +524,3 @@ console.log('after new Promise')
 [【翻译】Promises/A+规范](http://www.ituring.com.cn/article/66566)
 
 [ECMAScript 6入门](http://es6.ruanyifeng.com/#docs/promise#Promise-prototype-finally)
-

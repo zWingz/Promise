@@ -94,7 +94,6 @@ Promise 解决过程是一个抽象的操作, 其需要输入一个promise和一
 
 - `new Promise`中, 如果同时存在`res()`, `rej()`, 以及`throw new Error()`下, 只要执行了其中一个, 其他的都会被忽略. 因为`promise`状态只能转换一次
 
-- 每次调用`then`方法, 返回的都是一个新的`promise`对象. 而不是单纯的返回`this`。所以，promise内部不需要维护一个数组来存放回调函数，因为回调函数最多为一个。
 
 - 异步时机：其实在promise真正触发异步是在then方法中。在`new`一个`promise`的时候，是同步执行的，包括`Promise.resolve`和`Promise.reject`也是同步的, 这两个方法调用完毕后, `promise`的状态马上变成`RESOLVED`和`REJECT`, 并不是`PENDING`状态。当然, 除非你在`new`的时候主动`setTimeout`后才触发`resolve()`方法.
 
@@ -107,7 +106,7 @@ Promise 解决过程是一个抽象的操作, 其需要输入一个promise和一
         console.log('unhandledRejection', error.message);
     });
     ```
-    - 浏览器中会提示`Uncaught (in promise)`, 通过`console.err`提示
+    - 浏览器中会提示`Uncaught (in promise)`, 听说可以监听`unhandledrejection`事件.但是我没成功监听到
 
 - Promise规范是没有`finally`, `all`, `race`方法
 - `Promise.resolve`方法会根据参数的不同执行不同步骤
