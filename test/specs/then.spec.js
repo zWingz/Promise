@@ -12,9 +12,10 @@ describe('promise.then', () => {
             return val * 2
         }).then(val => {
             expect(val).to.equal(initVal * 2)
+            return val
         }).then().then(10, 20)
         .then(val => {
-            expect(val).to.equal(20)
+            expect(val).to.equal(40)
         })
     })
 })

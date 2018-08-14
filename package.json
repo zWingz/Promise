@@ -15,6 +15,7 @@
   "devDependencies": {},
   "scripts": {
     "test": "mocha --watch test/specs/*.spec.js",
+    "aplus-test": "mocha --watch test/specs/promise-aplus-tests.spec.js",
     "coverage": "istanbul cover _mocha test/specs/*.spec.js"
   },
   "repository": {
