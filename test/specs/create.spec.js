@@ -4,7 +4,7 @@ const expect = chai.expect
 const utils = require('../utils')
 
 describe('new promise', () => {
-    const promise = utils.createPromise(10, 150)
+    const promise = utils.createPromise(10, 500)
     it('create a new promise', function(done) {
         expect(promise.status).to.equal(MPromise.PENDING)
         done()
