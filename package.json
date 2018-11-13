@@ -1,7 +1,7 @@
 {
   "name": "promise",
   "version": "1.0.0",
-  "description": "``` plan 英 ['prɒmɪs]  美 ['prɑmɪs] n. 许诺，允诺；希望 vt. 允诺，许诺；给人以…的指望或希望 vi. 许诺；有指望，有前途 ```",
+  "description": "PromiseA+规范以及实现",
   "main": "index.js",
   "directories": {
     "test": "test"
