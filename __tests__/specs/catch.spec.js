@@ -1,5 +1,3 @@
-const chai = require('chai')
-const expect = chai.expect
 const utils = require('../utils')
 describe('promise.catch', () => {
     const initVal = 20
@@ -9,14 +7,14 @@ describe('promise.catch', () => {
         promise = promise.then(val => {
             throw error
         }).catch(e => {
-            expect(e).to.equal(error)
+            expect(e).toEqual(error)
             return 100
         })
         done()
     })
     it('get the value after catch', function(done) {
         promise.then(val => {
-            expect(val).to.equal(100)
+            expect(val).toEqual(100)
             done()
         })
     })

@@ -1,6 +1,4 @@
 const MPromise = require('../../index.js')
-const chai = require('chai')
-const expect = chai.expect
 const utils = require('../utils')
 
 
@@ -15,7 +13,7 @@ describe('return a promise/thenable', () => {
                 }, 500)
             })
         }).then(val => {
-            expect(val).to.equal(100)
+            expect(val).toEqual(100)
         })
     })
     it('return a thenable', function() {
@@ -28,7 +26,17 @@ describe('return a promise/thenable', () => {
                 }
             }
         }).then(val => {
-            expect(val).to.equal(200)
+            expect(val).toEqual(200)
         })
+    })
+    it('throw error in thenable', function() {
+        const a = new MPromise(res => {
+            res({
+                then() {
+                    throw new Error('test')
+                }
+            })
+        })
+        return expect(a).rejects.toThrow('test')
     })
 })

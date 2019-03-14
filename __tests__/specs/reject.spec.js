@@ -1,6 +1,4 @@
 const MPromise = require('../../index.js')
-const chai = require('chai')
-const expect = chai.expect
 const utils = require('../utils')
 
 
@@ -9,7 +7,7 @@ describe('exec MPromise.reject', () => {
     let promise = utils.createPromise(initVal)
     it('reject a static reason', function(done) {
         MPromise.reject('test error').catch(err => {
-            expect(err).to.equal('test error')
+            expect(err).toEqual('test error')
             done()
         })
     })
@@ -18,7 +16,7 @@ describe('exec MPromise.reject', () => {
             then() {}
         }
         MPromise.reject(obj).catch(err => {
-            expect(err).to.equal(obj)
+            expect(err).toEqual(obj)
             done()
         })
     })

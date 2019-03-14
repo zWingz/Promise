@@ -1,5 +1,3 @@
-const chai = require('chai')
-const expect = chai.expect
 const utils = require('../utils')
 
 describe('promise.chain', () => {
@@ -8,23 +6,23 @@ describe('promise.chain', () => {
     const error = new Error('test error')
     it('chain', function() {
         return promise.then(val => {
-            expect(val).to.equal(1)
+            expect(val).toEqual(1)
             return val + 1
         }).then(val => {
-            expect(val).to.equal(2)
+            expect(val).toEqual(2)
             return val + 2
         }).then(val => {
-            expect(val).to.equal(4)
+            expect(val).toEqual(4)
             throw error
             return val + 3
         }).then(val => {
-            expect(val).to.equal(7)
+            expect(val).toEqual(7)
             return val + 4
         }).catch(e => {
-            expect(e).to.equal(error)
+            expect(e).toEqual(error)
             return 100
         }).then(val => {
-            expect(val).to.equal(100)
+            expect(val).toEqual(100)
         })
     })
 })

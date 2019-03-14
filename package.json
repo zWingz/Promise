@@ -1,27 +1,41 @@
 {
   "name": "promise",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "PromiseA+规范以及实现",
   "main": "index.js",
   "directories": {
     "test": "test"
   },
-  "dependencies": {
+  "devDependencies": {
     "chai": "^4.1.2",
-    "istanbul": "^0.4.5",
+    "jest": "^24.5.0",
     "mocha": "^5.0.5",
     "promises-aplus-tests": "^2.1.2"
   },
-  "devDependencies": {},
   "scripts": {
-    "test": "mocha --watch test/specs/*.spec.js",
-    "aplus-test": "mocha --watch test/specs/promise-aplus-tests.spec.js",
-    "coverage": "istanbul cover _mocha test/specs/*.spec.js"
+    "jest": "jest",
+    "aplus-test": "mocha __tests__/promise-aplus.spec.js",
+    "test": "jest && aplus-test"
   },
   "repository": {
     "type": "git",
     "url": "git@git.umlife.net:zhengzhirong/promise.git"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "jest": {
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "collectCoverageFrom": [
+      "index.js"
+    ],
+    "coverageDirectory": "./coverage/",
+    "collectCoverage": true,
+    "testMatch": [
+      "<rootDir>/__tests__/specs/*.spec.js"
+    ]
+  }
 }

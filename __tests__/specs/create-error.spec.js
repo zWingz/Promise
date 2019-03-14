@@ -1,10 +1,6 @@
 const MPromise = require('../../index.js')
-const chai = require('chai')
-const expect = chai.expect
-const utils = require('../utils')
 
 describe('promise.create-a-error', () => {
-    const initVal = 20
     const error = new Error('create-a-error')
     it('throw a error before resolve', function(done) {
         let promise = new MPromise(function(res, rej) {
@@ -12,10 +8,10 @@ describe('promise.create-a-error', () => {
             res(10)
         })
         promise.then(val => {
-            expect(val).to.equal(10)
+            expect(val).toEqual(10)
             done()
         }, e => {
-            expect(e).to.equal(error)
+            expect(e).toEqual(error)
             done()
         })
     })
@@ -25,14 +21,11 @@ describe('promise.create-a-error', () => {
             throw error
         })
         promise.then(val => {
-            expect(val).to.equal(10)
+            expect(val).toEqual(10)
             done()
         }, e => {
-            expect(e).to.equal(error)
+            expect(e).toEqual(error)
             done()
         })
     })
 })
-
-
-

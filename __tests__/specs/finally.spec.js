@@ -1,6 +1,3 @@
-const MPromise = require('../../index.js')
-const chai = require('chai')
-const expect = chai.expect
 const utils = require('../utils')
 
 
@@ -10,7 +7,7 @@ describe('promise.finally', () => {
     it('do finally after resolve', function(done) {
         promise.then(val => val).finally(() => {
         }).then(val => {
-            expect(val).to.equal(1)
+            expect(val).toEqual(1)
             done()
         })
     })
@@ -20,7 +17,7 @@ describe('promise.finally', () => {
             throw err
         })
         .finally(() => {}).catch(val => {
-            expect(val).to.equal(err)
+            expect(val).toEqual(err)
             done()
         })
     })

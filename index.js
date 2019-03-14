@@ -52,6 +52,7 @@ function resolvePromise(promise, x, resolve, reject) {
       }
     } catch (e) {
       if (called) {
+        /* istanbul ignore next */
         return
       }
       called = true
@@ -77,11 +78,13 @@ class Promise {
     // 用来判断是否需要抛出unHandledPromiseRejectionWarning
     this.hasThenHandle = false
     this.then = this.then.bind(this)
+    this.resolve = this.resolve.bind(this)
+    this.reject = this.reject.bind(this)
     if (!_isFunction(fn)) {
       throw new Error(`Promise resolver ${fn} is not a function`)
     }
     try {
-      fn(this.resolve.bind(this), this.reject.bind(this))
+      fn(this.resolve, this.reject)
     } catch (e) {
       this.reject(e)
     }
@@ -93,14 +96,16 @@ class Promise {
    * @param {any} val 终值
    * @memberof Promise
    */
+
   resolve(val) {
     // 只有当状态为PENDING时候才执行
     // 确保Promise只会被执行一次
-    if (this.status === PENDING) {
+    const res = v => {
       // 记录当前的值
-      this.value = val
+      this.value = v
       // 修改状态
       this.status = RESOLVED
+      // console.log('cal res',val, this.status);
       // 执行回调
       const { onResolveCallback } = this
       if (onResolveCallback.length) {
@@ -109,6 +114,17 @@ class Promise {
             each()
           })
         }, 0)
+      }
+    }
+    if (this.status === PENDING) {
+      let called = false
+      // FIXED: 如果val是thenable对象, 则传递自身的resolve和jrect
+      if (_isThenable(val) && !called) {
+        called = true
+        // val.then(this.resolve, this.reject)
+        resolvePromise(this, val, res, this.reject)
+      } else {
+        res(val)
       }
     }
   }
@@ -290,13 +306,4 @@ class Promise {
 Promise.PENDING = PENDING
 Promise.RESOLVED = RESOLVED
 Promise.REJECT = REJECT
-// 用于promise-aplus-tests测试的adapter
-Promise.deferred = function() {
-  const deferred = {}
-  deferred.promise = new Promise((res, rej) => {
-    deferred.resolve = res
-    deferred.reject = rej
-  })
-  return deferred
-}
 module.exports = Promise

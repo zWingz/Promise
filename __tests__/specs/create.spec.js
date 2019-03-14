@@ -1,17 +1,14 @@
-const MPromise = require('../../index.js')
-const chai = require('chai')
-const expect = chai.expect
 const utils = require('../utils')
-
+const MPromise = require('../../index')
 describe('new promise', () => {
     const promise = utils.createPromise(10, 500)
     it('create a new promise', function(done) {
-        expect(promise.status).to.equal(MPromise.PENDING)
+        expect(promise.status).toEqual(MPromise.PENDING)
         done()
     })
     it('change status', function(done) {
         setTimeout(function() {
-            expect(promise.status).to.equal(MPromise.RESOLVED)
+            expect(promise.status).toEqual(MPromise.RESOLVED)
             done()
         }, 1500)
     })

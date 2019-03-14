@@ -1,6 +1,3 @@
-const MPromise = require('../../index.js')
-const chai = require('chai')
-const expect = chai.expect
 const utils = require('../utils')
 
 describe('promise.error', () => {
@@ -14,7 +11,7 @@ describe('promise.error', () => {
         }).then((val) => {
             return val
         }, e => {
-            expect(e).to.equal(error)
+            expect(e).toEqual(error)
             return 100
         })
         return promise
@@ -22,12 +19,9 @@ describe('promise.error', () => {
     it('get the value after catch error, promise status is resolve', function(done) {
         setTimeout(() => {
             promise.then(val => {
-                expect(val).to.equal(100)
+                expect(val).toEqual(100)
                 done()
             })
         }, 1000)
     })
 })
-
-
-
