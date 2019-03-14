@@ -10,15 +10,15 @@ jobs:
     steps:
         - checkout
         - restore_cache:
-          name: Restore Yarn Package Cache
-          keys:
-            - yarn-packages-{{ checksum "yarn.lock" }}
+            name: Restore Yarn Package Cache
+            keys:
+              - yarn-packages-{{ checksum "yarn.lock" }}
         - run: npm install
         - save_cache:
-          name: Save Yarn Package Cache
-          key: yarn-packages-{{ checksum "yarn.lock" }}
-          paths:
-            - ~/.cache/yarn
+            name: Save Yarn Package Cache
+            key: yarn-packages-{{ checksum "yarn.lock" }}
+            paths:
+              - ~/.cache/yarn
         - run: npm test
         - run: npm run coverage
         - run: npm i -g codecov
