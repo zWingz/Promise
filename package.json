@@ -15,7 +15,7 @@
   "scripts": {
     "jest": "jest",
     "aplus-test": "mocha __tests__/promise-aplus.spec.js",
-    "test": "jest && aplus-test"
+    "test": "yarn jest && yarn aplus-test"
   },
   "repository": {
     "type": "git",
